@@ -11,7 +11,7 @@ import (
 func Systeminfo() []byte {
 	var result []byte
 	var err error
-	cmd := exec.Command("osqueryi", "--json", "SELECT * FROM time")
+	cmd := exec.Command("osqueryi", "--json", "SELECT * FROM system_info")
 	if result, err = cmd.Output(); err != nil {
 		fmt.Println(err)
 	}
