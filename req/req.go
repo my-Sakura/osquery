@@ -1,7 +1,9 @@
 package req
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os/exec"
 )
@@ -20,9 +22,12 @@ func Systeminfo() []byte {
 func Handler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	result := Systeminfo()
-	_, err := w.Write(result)
+	var a interface{}
+	json.Unmarshal(result, &a)
+	b, err := json.Marshal(&a)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(nil)
 	}
+	w.Write(b)
 
 }
