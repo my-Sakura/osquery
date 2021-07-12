@@ -8,7 +8,7 @@ import (
 	"os/exec"
 )
 
-func Systeminfo() []byte {
+func Query() []byte {
 	var result []byte
 	var err error
 	cmd := exec.Command("osqueryi", "--json", "SELECT * FROM time")
@@ -21,7 +21,7 @@ func Systeminfo() []byte {
 
 func Handler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	result := Systeminfo()
+	result := Query()
 	var a interface{}
 	json.Unmarshal(result, &a)
 	b, err := json.Marshal(&a)
