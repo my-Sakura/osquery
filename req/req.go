@@ -3,31 +3,29 @@ package req
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os/exec"
+
+	"github.com/gin-gonic/gin"
 )
 
-func Query() []byte {
+type Result struct {
+}
+
+func New() *Result {
+	return &Result{}
+}
+func (a *Result) Method(r gin.IRouter) {
+	r.GET("/", a.OsQueryi)
+}
+func (a *Result) OsQueryi(c *gin.Context) {
 	var result []byte
 	var err error
 	cmd := exec.Command("osqueryi", "--json", "SELECT * FROM time")
 	if result, err = cmd.Output(); err != nil {
 		fmt.Println(err)
 	}
-
-	return result
-}
-
-func Handler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	result := Query()
-	var a interface{}
-	json.Unmarshal(result, &a)
-	b, err := json.Marshal(&a)
-	if err != nil {
-		log.Println(nil)
-	}
-	w.Write(b)
-
+	var data interface{}
+	json.Unmarshal(result, &data)
+	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": data})
 }
