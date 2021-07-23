@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	jsoniter "github.com/json-iterator/go"
@@ -19,6 +20,7 @@ func (oc *OsqueryController) Register(r gin.IRouter) {
 	r.GET("/sql", oc.sql)
 	r.GET("/mounts", oc.mounts)
 	r.GET("/system_info", oc.systemInfo)
+	r.GET("/time", oc.time)
 }
 
 func (oc *OsqueryController) sql(c *gin.Context) {
@@ -121,5 +123,38 @@ func (oc *OsqueryController) systemInfo(c *gin.Context) {
 		return
 	}
 
+	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": resp.Data})
+}
+func (oc *OsqueryController) time(c *gin.Context) {
+	result, err := utils.Query("\"SELECT weekday, year, month, day, hour, minutes, seconds, timezone, local_time, timestamp, datetime, isl_8601 FROM time")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError})
+		return
+	}
+
+	var resp struct {
+		Data []struct {
+			Datetime      time.Time `json:"datetime"`
+			Day           string    `json:"day"`
+			Hour          string    `json:"hour"`
+			LocalTime     string    `json:"local_time"`
+			LocalTimezone string    `json:"local_timezone"`
+			Minutes       string    `json:"minutes"`
+			Month         string    `json:"month"`
+			Seconds       string    `json:"seconds"`
+			Timestamp     string    `json:"timestamp"`
+			Timezone      string    `json:"timezone"`
+			UnixTime      string    `json:"unix_time"`
+			Weekday       string    `json:"weekday"`
+			WinTimestamp  string    `json:"win_timestamp"`
+			Year          string    `json:"year"`
+		} `json:"data"`
+	}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	err = json.Unmarshal(result, &resp.Data)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": resp.Data})
 }
