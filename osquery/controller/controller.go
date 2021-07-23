@@ -16,8 +16,8 @@ func New() *OsqueryController {
 }
 
 func (oc *OsqueryController) Register(r gin.IRouter) {
-	// r.GET("/mounts", oc.mounts)
-	// r.GET("/system_info", oc.systemInfo)
+	r.GET("/mounts", oc.mounts)
+	r.GET("/system_info", oc.systemInfo)
 	r.GET("/time", oc.time)
 }
 
@@ -125,5 +125,5 @@ func (oc *OsqueryController) time(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": string(result)})
+	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": resp.Data})
 }
