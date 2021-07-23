@@ -13,11 +13,11 @@ var (
 )
 
 const (
-	CMDDownloadHomeBrew      = "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
-	CMDDownloadChoco         = "@\"%SystemRoot%\\System32\\WindowsPowerShell\v1.0\\powershell.exe\" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command \"[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))\" && SET \"PATH=%PATH%;%ALLUSERSPROFILE%\\chocolatey\bin\""
-	CMDInstallOSQueryByBrew  = "brew install --cask osquery"
-	CMDInstallOSQueryByYum   = "yum install osquery"
-	CMDInstallOSQueryByChoco = "choco install osquery"
+	cmdDownloadHomeBrew      = "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+	cmdDownloadChoco         = "@\"%SystemRoot%\\System32\\WindowsPowerShell\v1.0\\powershell.exe\" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command \"[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))\" && SET \"PATH=%PATH%;%ALLUSERSPROFILE%\\chocolatey\bin\""
+	cmdInstallOSQueryByBrew  = "brew install --cask osquery"
+	cmdInstallOSQueryByYum   = "yum install osquery"
+	cmdInstallOSQueryByChoco = "choco install osquery"
 )
 
 func Query(SQL string) (output []byte, err error) {
@@ -37,13 +37,13 @@ func downloadOSQuery() error {
 	switch runtime.GOOS {
 	case "darwin":
 		if !checkCMDIsExist("brew") {
-			_, err := runCommand(CMDDownloadHomeBrew)
+			_, err := runCommand(cmdDownloadHomeBrew)
 			if err != nil {
 				return err
 			}
 		}
 
-		output, err := runCommand(CMDInstallOSQueryByBrew)
+		output, err := runCommand(cmdInstallOSQueryByBrew)
 		fmt.Println(string(output))
 
 		return err
@@ -53,18 +53,18 @@ func downloadOSQuery() error {
 		// if !checkCMDIsExist("yum") {
 		// }
 
-		output, err := runCommand(CMDInstallOSQueryByYum)
+		output, err := runCommand(cmdInstallOSQueryByYum)
 		fmt.Println(string(output))
 
 		return err
 
 	case "windows":
 		if !checkCMDIsExist("choco") {
-			_, err := runCommand(CMDDownloadChoco)
+			_, err := runCommand(cmdDownloadChoco)
 			return err
 		}
 
-		output, err := runCommand(CMDInstallOSQueryByChoco)
+		output, err := runCommand(cmdInstallOSQueryByChoco)
 		fmt.Println(string(output))
 
 		return err
