@@ -1,15 +1,15 @@
-package main
+// package main
 
 import (
 	"github.com/my-sakura/osquery/req"
 
-	"github.com/gin-gonic/gin"
-)
+// 	"github.com/gin-gonic/gin"
+// )
 
-func main() {
-	a := "/"
-	r := gin.Default()
-	Re := req.New()
-	Re.Method(r.Group(a))
-	r.Run(":8080")
-}
+// func main() {
+// 	a := "/"
+// 	r := gin.Default()
+// 	Re := handler.New()
+// 	Re.Method(r.Group(a))
+// 	r.Run(":8080") //监听 localhost:8080
+// }

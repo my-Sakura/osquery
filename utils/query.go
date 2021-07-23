@@ -20,17 +20,17 @@ const (
 	cmdInstallOSQueryByChoco = "choco install osquery"
 )
 
-func Query(SQL string) (output []byte, err error) {
+func init() {
 	if !checkCMDIsExist("osqueryi") {
-		err = downloadOSQuery()
+		err := downloadOSQuery()
 		if err != nil {
-			return nil, err
+			panic(err)
 		}
 	}
+}
 
-	output, err = runCommand("osqueryi --json " + SQL)
-
-	return
+func Query(SQL string) (output []byte, err error) {
+	return runCommand("osqueryi --json " + SQL)
 }
 
 func downloadOSQuery() error {
