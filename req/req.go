@@ -3,31 +3,47 @@ package req
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os/exec"
+
+	"github.com/gin-gonic/gin"
 )
 
-func Systeminfo() []byte {
-	var result []byte
-	var err error
-	cmd := exec.Command("osqueryi", "--json", "SELECT * FROM system_info")
-	if result, err = cmd.Output(); err != nil {
-		fmt.Println(err)
-	}
-
-	return result
+type Table struct {
+	Datetime      time.Time `json:"datetime"`
+	Day           string    `json:"day"`
+	Hour          string    `json:"hour"`
+	Iso8601       time.Time `json:"iso_8601"`
+	LocalTime     string    `json:"local_time"`
+	LocalTimezone string    `json:"local_timezone"`
+	Minutes       string    `json:"minutes"`
+	Month         string    `json:"month"`
+	Seconds       string    `json:"seconds"`
+	Timestamp     string    `json:"timestamp"`
+	Timezone      string    `json:"timezone"`
+	UnixTime      string    `json:"unix_time"`
+	Weekday       string    `json:"weekday"`
+	WinTimestamp  string    `json:"win_timestamp"`
+	Year          string    `json:"year"`
 }
 
-func Handler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	result := Systeminfo()
-	var a interface{}
-	json.Unmarshal(result, &a)
-	b, err := json.Marshal(&a)
-	if err != nil {
-		log.Println(nil)
-	}
-	w.Write(b)
+type Result struct {
+}
 
+func New() *Result {
+	return &Result{}
+}
+func (a *Result) Method(r gin.IRouter) {
+	r.GET("/", a.OsQueryi)
+}
+func (a *Result) OsQueryi(c *gin.Context) {
+	cmd := exec.Command("osqueryi", "--json",
+		"SELECT weekday, year, month, day, hour, minutes, seconds, timezone, local_time, timestamp, datetime, isl_8601 FROM time")
+	result, err := cmd.Output()
+	if err != nil {
+		log.Println(err)
+	}
+	var data Table
+	json.Unmarshal(result, &data)
+	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": data})
 }

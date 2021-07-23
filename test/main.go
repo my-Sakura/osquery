@@ -1,15 +1,15 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"osqueryi/req"
+	"github.com/shuaiqidechuan/req"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	http.HandleFunc("/", req.Handler)
-	err := http.ListenAndServe(":9000", nil)
-	if err != nil {
-		log.Println(err)
-	}
+	a := "/"
+	r := gin.Default()
+	Re := handler.New()
+	Re.Method(r.Group(a))
+	r.Run(":8080") //监听 localhost:8080
 }
