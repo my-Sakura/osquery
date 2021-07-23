@@ -1,25 +1,20 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
-	"github.com/my-sakura/osquery/utils"
+	"github.com/gin-gonic/gin"
+	"github.com/my-sakura/osquery/osquery/controller"
 )
 
-const (
-	SQL = "\"SELECT * FROM mounts\""
+var (
+	osQueryRouterGroup = "api/v1/osquery"
 )
 
 func main() {
-	// r := gin.Default()
-	output, err := utils.Query(SQL)
-	if err != nil {
-		log.Println(err)
-	}
+	r := gin.Default()
 
-	fmt.Println(string(output))
-	// controller.New().Register(r.Group(osQueryRouterGroup))
+	controller.New().Register(r.Group(osQueryRouterGroup))
 
-	// log.Println(r.Run("0.0.0.0:8081"))
+	log.Println(r.Run("0.0.0.0:8081"))
 }
