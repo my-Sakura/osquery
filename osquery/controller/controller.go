@@ -20,7 +20,7 @@ func (oc *OsqueryController) Register(r gin.IRouter) {
 }
 
 func (oc *OsqueryController) mounts(c *gin.Context) {
-	result, err := utils.Query("\"SELECT * FROM mounts\"")
+	result, err := utils.Query("\"SELECT blocks,blocks_available,blocks_free,blocks_size,device,device_alias,flags,inodes,inodes_free,path,type FROM mounts\"")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError})
 		return
@@ -53,7 +53,7 @@ func (oc *OsqueryController) mounts(c *gin.Context) {
 }
 
 func (oc *OsqueryController) systemInfo(c *gin.Context) {
-	result, err := utils.Query("\"SELECT * FROM system_info\"")
+	result, err := utils.Query("\"SELECT board_model,board_serial,board_vendor,board_version,computer_name,cpu_brand,cpu_logical_cores,cpu_microcode,cpu_physical_cores,cpu_subtype,cpu_type,hardware_model,hardware_serial,hardware_vendor,hardware_version,hostname,local_hostname,physical_memory,uuid FROM system_info\"")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError})
 		return
