@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/shuaiqidechuan/req"
+	"github.com/my-sakura/osquery/req"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,7 +9,7 @@ import (
 func main() {
 	a := "/"
 	r := gin.Default()
-	Re := handler.New()
+	Re := req.New()
 	Re.Method(r.Group(a))
-	r.Run(":8080") //监听 localhost:8080
+	r.Run(":8080")
 }

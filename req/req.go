@@ -2,9 +2,10 @@ package req
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 	"os/exec"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
