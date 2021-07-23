@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,8 +16,38 @@ func New() *OsqueryController {
 }
 
 func (oc *OsqueryController) Register(r gin.IRouter) {
+	r.GET("/sql", oc.sql)
 	r.GET("/mounts", oc.mounts)
 	r.GET("/system_info", oc.systemInfo)
+}
+
+func (oc *OsqueryController) sql(c *gin.Context) {
+	var req struct {
+		SQL string `json:"sql"`
+	}
+
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest})
+		return
+	}
+	fmt.Println(req.SQL)
+	SQL := fmt.Sprintf("\"%s\"", req.SQL)
+	result, err := utils.Query(SQL)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError})
+		return
+	}
+
+	var resp interface{}
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	err = json.Unmarshal(result, &resp)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": resp})
 }
 
 func (oc *OsqueryController) mounts(c *gin.Context) {
