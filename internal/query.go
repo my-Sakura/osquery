@@ -1,4 +1,4 @@
-package utils
+package internal
 
 import (
 	"fmt"
@@ -31,6 +31,15 @@ func init() {
 
 func Query(SQL string) (output []byte, err error) {
 	return runCommand("osqueryi --json " + SQL)
+}
+
+func Tables() (output []byte, err error) {
+	return runCommand("osqueryi .table")
+}
+
+func Table(tableName string) (output []byte, err error) {
+	cmd := fmt.Sprintf("osqueryi \"SELECT * FROM %s\"", tableName)
+	return runCommand(cmd)
 }
 
 func downloadOSQuery() error {
@@ -76,7 +85,7 @@ func downloadOSQuery() error {
 func runCommand(cmd string) (output []byte, err error) {
 	switch runtime.GOOS {
 	case "darwin":
-		log.Println("Running Mac cmd:", cmd)
+		// log.Println("Running Mac cmd:", cmd)
 		return exec.Command("/bin/sh", "-c", cmd).Output()
 
 	case "linux":

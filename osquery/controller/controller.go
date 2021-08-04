@@ -2,12 +2,13 @@ package controller
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/my-sakura/osquery/utils"
+	"github.com/my-sakura/osquery/internal"
 )
 
 type OsqueryController struct{}
@@ -23,6 +24,25 @@ func (oc *OsqueryController) Register(r gin.IRouter) {
 	r.GET("/time", oc.time)
 }
 
+func (oc *OsqueryController) ListTable() {
+	result, err := internal.Tables()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf(string(result))
+}
+
+func (oc *OsqueryController) Table(tableName string) {
+	result, err := internal.Table(tableName)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	fmt.Printf(string(result))
+}
+
 func (oc *OsqueryController) sql(c *gin.Context) {
 	var req struct {
 		SQL string `json:"sql"`
@@ -35,7 +55,7 @@ func (oc *OsqueryController) sql(c *gin.Context) {
 	}
 	fmt.Println(req.SQL)
 	SQL := fmt.Sprintf("\"%s\"", req.SQL)
-	result, err := utils.Query(SQL)
+	result, err := internal.Query(SQL)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError})
 		return
@@ -53,7 +73,7 @@ func (oc *OsqueryController) sql(c *gin.Context) {
 }
 
 func (oc *OsqueryController) mounts(c *gin.Context) {
-	result, err := utils.Query("\"SELECT blocks,blocks_available,blocks_free,blocks_size,device,device_alias,flags,inodes,inodes_free,path,type FROM mounts\"")
+	result, err := internal.Query("\"SELECT blocks,blocks_available,blocks_free,blocks_size,device,device_alias,flags,inodes,inodes_free,path,type FROM mounts\"")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError})
 		return
@@ -86,7 +106,7 @@ func (oc *OsqueryController) mounts(c *gin.Context) {
 }
 
 func (oc *OsqueryController) systemInfo(c *gin.Context) {
-	result, err := utils.Query("\"SELECT board_model,board_serial,board_vendor,board_version,computer_name,cpu_brand,cpu_logical_cores,cpu_microcode,cpu_physical_cores,cpu_subtype,cpu_type,hardware_model,hardware_serial,hardware_vendor,hardware_version,hostname,local_hostname,physical_memory,uuid FROM system_info\"")
+	result, err := internal.Query("\"SELECT board_model,board_serial,board_vendor,board_version,computer_name,cpu_brand,cpu_logical_cores,cpu_microcode,cpu_physical_cores,cpu_subtype,cpu_type,hardware_model,hardware_serial,hardware_vendor,hardware_version,hostname,local_hostname,physical_memory,uuid FROM system_info\"")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError})
 		return
@@ -126,7 +146,7 @@ func (oc *OsqueryController) systemInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": resp.Data})
 }
 func (oc *OsqueryController) time(c *gin.Context) {
-	result, err := utils.Query("\"SELECT weekday, year, month, day, hour, minutes, seconds, timezone, local_time, timestamp, datetime, isl_8601 FROM time")
+	result, err := internal.Query("\"SELECT weekday, year, month, day, hour, minutes, seconds, timezone, local_time, timestamp, datetime, isl_8601 FROM time")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError})
 		return
