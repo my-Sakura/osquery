@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -208,10 +209,12 @@ func main() {
 	argument = os.Args[1]
 	switch argument {
 	case "tables":
-		osQuery.ListTable()
+		tableList := osQuery.ListTable()
+		fmt.Println(tableList)
 	default:
 		if tables[argument] {
-			osQuery.Table(argument)
+			tableDetail := osQuery.Table(argument)
+			fmt.Println(tableDetail)
 		}
 	}
 }
