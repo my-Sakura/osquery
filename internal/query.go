@@ -13,10 +13,21 @@ var (
 )
 
 const (
-	cmdDownloadHomeBrew      = "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
-	cmdDownloadChoco         = "@\"%SystemRoot%\\System32\\WindowsPowerShell\v1.0\\powershell.exe\" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command \"[System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))\" && SET \"PATH=%PATH%;%ALLUSERSPROFILE%\\chocolatey\bin\""
-	cmdInstallOSQueryByBrew  = "brew install --cask osquery"
-	cmdInstallOSQueryByYum   = "yum install osquery"
+	cmdDownloadHomeBrew     = "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+	cmdInstallOSQueryByBrew = "brew install --cask osquery"
+
+	cmdIsUbuntuOrCentos     = "cat /etc/*-release | grep NAME"
+	cmdInstallOSQueryByYum1 = "curl -L https://pkg.osquery.io/rpm/GPG | sudo tee /etc/pki/rpm-gpg/RPM-GPG-KEY-osquery"
+	cmdInstallOSQueryByYum2 = "yum-config-manager --add-repo https://pkg.osquery.io/rpm/osquery-s3-rpm.repo"
+	cmdInstallOSQueryByYum3 = "yum-config-manager --enable osquery-s3-rpm-repo"
+	cmdInstallOSQueryByYum  = "yum install -y osquery"
+
+	cmdInstallOSQueryByAptGet1 = "apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 1484120AC4E9F8A1A577AEEE97A80C63C9D8B80B"
+	cmdInstallOSQueryByAptGet2 = "add-apt-repository 'deb [arch=amd64] https://pkg.osquery.io/deb deb main'"
+	cmdInstallOSQueryByAptGet3 = "apt-get update"
+	cmdInstallOSQueryByAptGet  = "apt-get install osquery"
+
+	cmdDownloadChoco         = "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
 	cmdInstallOSQueryByChoco = "choco install osquery"
 )
 
@@ -45,41 +56,113 @@ func Table(tableName string) (output []byte, err error) {
 func downloadOSQuery() error {
 	switch runtime.GOOS {
 	case "darwin":
-		if !checkCMDIsExist("brew") {
-			_, err := runCommand(cmdDownloadHomeBrew)
+		output, err := installOSQueryInMacDarwin()
+		if err != nil {
+			return fmt.Errorf("Error: installOSQueryInMacDarwin error: %s", err)
+		}
+		fmt.Print(string(output))
+
+	case "linux":
+		var (
+			output []byte
+			err    error
+		)
+
+		// check is centos or ubuntu
+		output, err = runCommand(cmdIsUbuntuOrCentos)
+		if err != nil {
+			fmt.Printf("Error: The Command [%s] is err: %s", cmdIsUbuntuOrCentos, err)
+			return nil
+		}
+
+		if strings.Contains(string(output), "Ubuntu") {
+			output, err = installOSQueryInDebianLinux()
 			if err != nil {
-				return err
+				return fmt.Errorf("Error: installOSQueryInDebianLinux error: %s", err)
+			}
+		} else if strings.Contains(string(output), "CentOS") {
+			output, err = installOSQueryInRPMLinux()
+			if err != nil {
+				return fmt.Errorf("Error: installOSQueryInRPMLinux error: %s", err)
 			}
 		}
 
-		output, err := runCommand(cmdInstallOSQueryByBrew)
-		fmt.Println(string(output))
-
-		return err
-
-	case "linux":
-		// TODO check yum exist
-		// if !checkCMDIsExist("yum") {
-		// }
-
-		output, err := runCommand(cmdInstallOSQueryByYum)
-		fmt.Println(string(output))
-
-		return err
+		fmt.Print(string(output))
 
 	case "windows":
-		if !checkCMDIsExist("choco") {
-			_, err := runCommand(cmdDownloadChoco)
-			return err
+		output, err := installOSQueryInWindows()
+		if err != nil {
+			return fmt.Errorf("Error: installOSQueryInWindows error: %s", err)
 		}
-
-		output, err := runCommand(cmdInstallOSQueryByChoco)
-		fmt.Println(string(output))
-
-		return err
+		fmt.Print(string(output))
 	}
 
 	return errOSNotFound(runtime.GOOS)
+}
+
+func installOSQueryInDebianLinux() (output []byte, err error) {
+	// TODO check apt-get exist
+	output, err = runCommand(cmdInstallOSQueryByAptGet1)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Print(string(output))
+
+	output, err = runCommand(cmdInstallOSQueryByAptGet2)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Print(string(output))
+
+	output, err = runCommand(cmdInstallOSQueryByAptGet3)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Print(string(output))
+
+	return runCommand(cmdInstallOSQueryByAptGet)
+}
+
+func installOSQueryInRPMLinux() (output []byte, err error) {
+	// TODO check yum exist
+	output, err = runCommand(cmdInstallOSQueryByYum1)
+	if err != nil {
+		return output, err
+	}
+	fmt.Print(string(output))
+	output, err = runCommand(cmdInstallOSQueryByYum2)
+	if err != nil {
+		return output, err
+	}
+	fmt.Print(string(output))
+	output, err = runCommand(cmdInstallOSQueryByYum3)
+	if err != nil {
+		return output, err
+	}
+	fmt.Print(string(output))
+
+	return runCommand(cmdInstallOSQueryByYum)
+
+}
+
+func installOSQueryInMacDarwin() (output []byte, err error) {
+	if !checkCMDIsExist("brew") {
+		_, err := runCommand(cmdDownloadHomeBrew)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return runCommand(cmdInstallOSQueryByBrew)
+}
+
+func installOSQueryInWindows() (output []byte, err error) {
+	if !checkCMDIsExist("choco") {
+		_, err := runCommand(cmdDownloadChoco)
+		return nil, err
+	}
+
+	return runCommand(cmdInstallOSQueryByChoco)
 }
 
 func runCommand(cmd string) (output []byte, err error) {
@@ -89,7 +172,6 @@ func runCommand(cmd string) (output []byte, err error) {
 		return exec.Command("/bin/sh", "-c", cmd).Output()
 
 	case "linux":
-		log.Println("Running Linux cmd:", cmd)
 		return exec.Command("/bin/sh", "-c", cmd).Output()
 
 	case "windows":

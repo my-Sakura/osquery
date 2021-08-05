@@ -24,23 +24,23 @@ func (oc *OsqueryController) Register(r gin.IRouter) {
 	r.GET("/time", oc.time)
 }
 
-func (oc *OsqueryController) ListTable() {
+func (oc *OsqueryController) ListTable() string {
 	result, err := internal.Tables()
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf(string(result))
+	return string(result)
 }
 
-func (oc *OsqueryController) Table(tableName string) {
+func (oc *OsqueryController) Table(tableName string) string {
 	result, err := internal.Table(tableName)
 	if err != nil {
 		log.Println(err)
-		return
+		return ""
 	}
 
-	fmt.Printf(string(result))
+	return string(result)
 }
 
 func (oc *OsqueryController) sql(c *gin.Context) {
