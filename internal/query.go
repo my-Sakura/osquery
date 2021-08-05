@@ -168,10 +168,11 @@ func installOSQueryInWindows() (output []byte, err error) {
 func runCommand(cmd string) (output []byte, err error) {
 	switch runtime.GOOS {
 	case "darwin":
-		// log.Println("Running Mac cmd:", cmd)
+		log.Println("Running Mac cmd:", cmd)
 		return exec.Command("/bin/sh", "-c", cmd).Output()
 
 	case "linux":
+		log.Println("Running Linux cmd:", cmd)
 		return exec.Command("/bin/sh", "-c", cmd).Output()
 
 	case "windows":
